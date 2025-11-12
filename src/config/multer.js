@@ -1,8 +1,9 @@
+// backend/src/config/multer.js
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 
-// Crear directorio si no existe
+// Crear carpeta para uploads si no existe
 const uploadDir = path.join(__dirname, '../../uploads/vehicles');
 if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir, { recursive: true });
@@ -14,12 +15,14 @@ const storage = multer.diskStorage({
     cb(null, uploadDir);
   },
   filename: function (req, file, cb) {
+    // Generar nombre único: timestamp-randomnumber-originalname
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    cb(null, 'vehicle-' + uniqueSuffix + path.extname(file.originalname));
+    const ext = path.extname(file.originalname);
+    cb(null, 'vehicle-' + uniqueSuffix + ext);
   }
 });
 
-// Filtro de archivos (solo imágenes)
+// Filtro para aceptar solo imágenes
 const fileFilter = (req, file, cb) => {
   const allowedTypes = /jpeg|jpg|png|gif|webp/;
   const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
@@ -32,11 +35,11 @@ const fileFilter = (req, file, cb) => {
   }
 };
 
-// Configurar multer
+// Configuración de multer
 const upload = multer({
   storage: storage,
   limits: {
-    fileSize: 5 * 1024 * 1024 // 5MB máximo
+    fileSize: 5 * 1024 * 1024 // 5MB máximo por imagen
   },
   fileFilter: fileFilter
 });
